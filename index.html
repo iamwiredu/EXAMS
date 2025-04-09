@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fuel &amp; Combustion OBJ Exams</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+      font-family: 'Roboto', sans-serif;
+      margin: 20px;
+      max-width: 900px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #1976d2;
+    }
+    .question-container {
+      background: #fff;
+      border: 1px solid #e0e6ed;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .question-container p {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    .options label {
+      background: #e1f5fe;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin: 5px 0;
+      display: block;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .options label:hover {
+      background: #b3e5fc;
+    }
+    #feedback {
+      font-weight: 700;
+      margin: 10px 0;
+      font-size: 20px;
+    }
+    #scoreboard {
+      margin-top: 20px;
+      padding: 15px;
+      border-top: 2px solid #1976d2;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-size: 16px;
+    }
+    button {
+      background-color: #1976d2;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      padding: 10px 16px;
+      margin: 10px 5px 0;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0d47a1;
+    }
+    #modeBtn {
+      background-color: #388e3c;
+    }
+    #modeBtn:hover {
+      background-color: #1b5e20;
+    }
+    #jumpDiv {
+      margin-top: 10px;
+    }
+    #jumpDiv input {
+      width: 60px;
+      padding: 5px;
+      margin-left: 5px;
+      margin-right: 5px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fuel &amp; Combustion Quiz</h1>
+  <div id="quiz"></div>
+  <div id="feedback"></div>
+  <div>
+    <button id="submitBtn">Submit Answer</button>
+    <button id="nextBtn" style="display:none;">Next Question</button>
+    <button id="modeBtn">Retry Wrong Answers</button>
+  </div>
+  <!-- Jump to Question Feature -->
+  <div id="jumpDiv">
+    <label for="jumpInput">Jump to Question:</label>
+    <input type="number" id="jumpInput" placeholder="e.g., 5" />
+    <button id="jumpBtn">Go</button>
+  </div>
+  <div id="scoreboard">
+    <p>Question: <span id="currentIndexDisplay">1</span> / <span id="totalQuestionsDisplay"></span></p>
+    <p>Correct: <span id="correctCountDisplay">0</span></p>
+    <p>Wrong: <span id="wrongCountDisplay">0</span></p>
+    <p>Mode: <span id="modeDisplay">All Questions</span></p>
+  </div>
+
+  <script>
+    // Objective questions from Section B (multiple-choice allowing multiple answers)
+    const objectiveQuestions = [
+      {
+        question: "Which of the following is used in the analysis of flue gas?",
+        options: [
+          "Orsat’s apparatus",
+          "Bomb calorimeter",
+          "Boyd’s calorimeter",
+          "None of the above"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Which of the following is NOT a characteristic of the progressive transformation of wood to coal during coalification?",
+        options: [
+          "Fixed carbon content increases",
+          "Moisture content decreases",
+          "Volatile matter increases",
+          "Oxygen content decreases"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "Ultimate analysis of fuel is done to determine the percentage of:",
+        options: [
+          "C, H2O, ash and volatile matter",
+          "C, H, N, S, O",
+          "Sulphur only",
+          "Fixed carbon only"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "Iso‐octane (2,2,4‐trimethyl pentane) is assigned an octane rating of:",
+        options: [
+          "100",
+          "Zero",
+          "50",
+          "Above 100"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Which of the following contains the highest percentage of volatile matter?",
+        options: [
+          "Anthracite",
+          "Lignite",
+          "Peat",
+          "Bituminous coal"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "Quality coal should have:",
+        options: [
+          "Low moisture, low calorific value, high ash content",
+          "High moisture, high calorific value, high ash content",
+          "High moisture, high calorific value, low ash content",
+          "None of the above"
+        ],
+        correctIndices: [3],
+        type: "objective"
+      },
+      {
+        question: "Water gas is a gas composed of:",
+        options: [
+          "CO + N2 + H2",
+          "CO + H2",
+          "CH4, N2, H2O",
+          "C3H8, C4H10, CH4"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "One of the main disadvantages of using leaded fuel is the:",
+        options: [
+          "Increase of knocking potential of the fuel",
+          "Increase in the efficiency and output of the engine",
+          "Deposition of lead oxide on the piston",
+          "Increased toxicity of lead oxide in the environment"
+        ],
+        correctIndices: [3],
+        type: "objective"
+      },
+      {
+        question: "In the processing of natural gas, dehydration is done using:",
+        options: [
+          "Monoethylene glycol",
+          "Diethylene glycol",
+          "Monoethanol amine",
+          "Metyl tertiary butyl ether"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Which of the following is used in the sweetening of natural gas?",
+        options: [
+          "Monoethylene glycol",
+          "Triethylene glycol",
+          "Monoethanol amine",
+          "Metyl tertiary butyl ether"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "In the proximate analysis of coal, the moisture is determined at a temperature of 105℃.",
+        options: [
+          "True",
+          "False"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Which fuel is used widely in steam power plants?",
+        options: [
+          "Oil",
+          "Gas",
+          "Coal",
+          "Petroleum"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "Main combustible constituent of producer gas is:",
+        options: [
+          "CO",
+          "N2",
+          "H2",
+          "CH4"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "In flue gas analysis by Orsat's apparatus, carbon dioxide is absorbed by:",
+        options: [
+          "Cuprous chloride",
+          "Potassium hydroxide",
+          "Alkaline pyrogallol solution",
+          "None of the above"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "In flue gas analysis by Orsat's apparatus, carbon monoxide is absorbed by:",
+        options: [
+          "Cuprous chloride",
+          "Potassium hydroxide",
+          "Alkaline pyrogallol solution",
+          "None of the above"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "In flue gas analysis by Orsat's apparatus, oxygen is absorbed by:",
+        options: [
+          "Cuprous chloride",
+          "Potassium hydroxide",
+          "Alkaline pyrogallol solution",
+          "None of the above"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "Calorific value of both the solid & liquid fuels can be determined by using:",
+        options: [
+          "Junker’s calorimeter",
+          "Bomb calorimeter",
+          "Boy’s calorimeter",
+          "None of the above"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "Hydrogen is arguably the cleanest fuel and can be stored by:",
+        options: [
+          "Compressed gas in high-pressure tanks",
+          "Liquids in dewars or tanks at about -253℃",
+          "As a solid by absorption with metals as metal hydrides",
+          "Adsorption onto adsorbents such as activated carbon"
+        ],
+        correctIndices: [0, 1, 2, 3],
+        type: "objective"
+      },
+      {
+        question: "Cetane and Octane numbers are associated with gasoline and diesel fuels respectively.",
+        options: [
+          "True",
+          "False"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "Calorific value of gaseous fuels can be determined by using:",
+        options: [
+          "Junker’s calorimeter",
+          "Bomb calorimeter",
+          "Boy’s calorimeter",
+          "None of the above"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "Power alcohol is a mixture of:",
+        options: [
+          "Petrol + ethyl alcohol",
+          "Diesel + ethyl alcohol",
+          "Petrol + methyl alcohol",
+          "Diesel + methyl alcohol"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "The antiknocking tendency of fuel constituents is in the following order:",
+        options: [
+          "Straight-chain paraffins < Olefins < Cyclo-paraffins < Branched-chain paraffins < Aromatics",
+          "Straight-chain paraffins < Branched-chain paraffins < Olefins < Cyclo-paraffins < Aromatics",
+          "Straight-chain paraffins < Cyclo-paraffins < Branched-chain paraffins < Olefins < Aromatics",
+          "Straight-chain paraffins < Cyclo-paraffins < Branched-chain paraffins < Aromatics < Olefins"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Which of the following when added to gasoline will produce leaded gasoline?",
+        options: [
+          "Tetra Ethyl lead",
+          "Methyl Tertiary Butyl Ether",
+          "Tetra Methyl lead",
+          "Ethyl Tertiary Butyl Ether"
+        ],
+        correctIndices: [0],
+        type: "objective"
+      },
+      {
+        question: "Synthetic petrol can be obtained by:",
+        options: [
+          "Distillation",
+          "Fischer–Tropsch method",
+          "Bergius process",
+          "All of the above"
+        ],
+        correctIndices: [3],
+        type: "objective"
+      },
+      {
+        question: "Gross and net calorific value of a fuel will be the same if:",
+        options: [
+          "Its ash content is zero",
+          "Its carbon content is very low",
+          "Its hydrogen/hydrogen compound content is zero",
+          "Under no circumstances"
+        ],
+        correctIndices: [2],
+        type: "objective"
+      },
+      {
+        question: "The odour one perceives as a result of leaking LPG is a result of the methane and ethane present.",
+        options: [
+          "True",
+          "False"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "Proximate analysis of coal determines its __________ content.",
+        options: [
+          "Moisture, ash, sulphur & volatile matter",
+          "Moisture, volatile matter, ash & fixed carbon",
+          "Moisture, sulphur, nitrogen & fixed carbon",
+          "None of these"
+        ],
+        correctIndices: [1],
+        type: "objective"
+      },
+      {
+        question: "A coal with high ash content is undesirable, as:",
+        options: [
+          "The ash retains the sulphur & phosphorus and affects the quality of products in metallurgical furnaces and increases slag formation",
+          "The ash in molten condition gets absorbed in the pores of the refractory lining of the furnace causing spalling",
+          "It is abrasive to the coal pulveriser and combustion chamber",
+          "All of the above"
+        ],
+        correctIndices: [3],
+        type: "objective"
+      },
+      {
+        question: "The calorific value of a fuel is affected by:",
+        options: [
+          "Oxygen content",
+          "Moisture content",
+          "Carbon content",
+          "Ash content"
+        ],
+        correctIndices: [0, 1, 2, 3],
+        type: "objective"
+      }
+    ];
+
+    // Subjective questions from Section C
+    const subjectiveQuestions = [];
+
+    // Combine objective and subjective questions
+    const allQuestions = objectiveQuestions.concat(subjectiveQuestions);
+
+    // Global quiz state variables
+    let quizMode = "all";
+    let quizQuestions = allQuestions.slice(); // by default, all questions
+    let currentIndex = parseInt(localStorage.getItem('fuelCombCurrentIndex')) || 0;
+    let correctCount = parseInt(localStorage.getItem('fuelCombCorrectCount')) || 0;
+    let wrongQuestions = JSON.parse(localStorage.getItem('fuelCombWrongQuestions')) || [];
+    // For subjective answers, we store answers keyed by question index
+    let subjectiveAnswers = JSON.parse(localStorage.getItem('fuelCombSubjectiveAnswers')) || {};
+    // Backup state for "All" mode
+    let backupAllState = null;
+
+    function updateScoreboard() {
+      document.getElementById('currentIndexDisplay').textContent = currentIndex + 1;
+      document.getElementById('totalQuestionsDisplay').textContent = quizQuestions.length;
+      document.getElementById('correctCountDisplay').textContent = correctCount;
+      document.getElementById('wrongCountDisplay').textContent = wrongQuestions.length;
+      document.getElementById('modeDisplay').textContent = quizMode === "all" ? "All Questions" : "Wrong Answers Only";
+      updateJumpInput();
+    }
+
+    function saveProgress() {
+      localStorage.setItem('fuelCombCurrentIndex', currentIndex);
+      localStorage.setItem('fuelCombCorrectCount', correctCount);
+      localStorage.setItem('fuelCombWrongQuestions', JSON.stringify(wrongQuestions));
+      localStorage.setItem('fuelCombSubjectiveAnswers', JSON.stringify(subjectiveAnswers));
+    }
+
+    function loadQuestion() {
+      const quizDiv = document.getElementById('quiz');
+      quizDiv.innerHTML = "";
+      document.getElementById('feedback').textContent = "";
+      document.getElementById('jumpInput').max = quizQuestions.length;
+      if (currentIndex >= quizQuestions.length) {
+        quizDiv.innerHTML = "<h2>Quiz Completed!</h2><p>Your score: " + correctCount + " / " + quizQuestions.length + "</p>";
+        document.getElementById('submitBtn').style.display = "none";
+        document.getElementById('nextBtn').style.display = "none";
+        return;
+      }
+      const qObj = quizQuestions[currentIndex];
+      const container = document.createElement('div');
+      container.className = "question-container";
+
+      const qText = document.createElement('p');
+      qText.textContent = qObj.question;
+      container.appendChild(qText);
+
+      if (qObj.type === "objective") {
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = "options";
+        qObj.options.forEach((opt, idx) => {
+          const label = document.createElement('label');
+          const checkbox = document.createElement('input');
+          checkbox.type = "checkbox";
+          checkbox.name = "option";
+          checkbox.value = idx;
+          label.appendChild(checkbox);
+          label.insertAdjacentText("beforeend", " " + opt);
+          optionsDiv.appendChild(label);
+        });
+        container.appendChild(optionsDiv);
+      } else if (qObj.type === "subjective") {
+        const textarea = document.createElement('textarea');
+        textarea.id = "subjectiveAnswer";
+        // Load previous answer if available
+        if (subjectiveAnswers[currentIndex]) {
+          textarea.value = subjectiveAnswers[currentIndex];
+        }
+        container.appendChild(textarea);
+      }
+      quizDiv.appendChild(container);
+    }
+
+    // Helper function to check if two arrays are equal (order-insensitive)
+    function arraysEqual(a, b) {
+      if (a.length !== b.length) return false;
+      a.sort();
+      b.sort();
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+      }
+      return true;
+    }
+
+    function checkAnswer() {
+      const qObj = quizQuestions[currentIndex];
+      const feedbackDiv = document.getElementById('feedback');
+      if (qObj.type === "objective") {
+        const checkboxes = document.querySelectorAll('input[name="option"]');
+        let selectedIndices = [];
+        checkboxes.forEach((checkbox) => {
+          if (checkbox.checked) {
+            selectedIndices.push(parseInt(checkbox.value));
+          }
+        });
+        if (selectedIndices.length === 0) {
+          alert("Please select at least one answer.");
+          return;
+        }
+        if (arraysEqual(selectedIndices, qObj.correctIndices)) {
+          feedbackDiv.textContent = "Correct!";
+          correctCount++;
+        } else {
+          let correctOpts = qObj.correctIndices.map(i => qObj.options[i]).join(", ");
+          feedbackDiv.textContent = "Incorrect! The correct answer(s): " + correctOpts;
+          if (!wrongQuestions.some(q => q.question === qObj.question)) {
+            wrongQuestions.push(qObj);
+          }
+        }
+      } else if (qObj.type === "subjective") {
+        const answerText = document.getElementById('subjectiveAnswer').value.trim();
+        if (answerText === "") {
+          alert("Please enter your answer.");
+          return;
+        }
+        subjectiveAnswers[currentIndex] = answerText;
+        feedbackDiv.textContent = "Answer recorded.";
+      }
+      saveProgress();
+      document.getElementById('submitBtn').style.display = "none";
+      document.getElementById('nextBtn').style.display = "inline-block";
+      updateScoreboard();
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      saveProgress();
+      document.getElementById('submitBtn').style.display = "inline-block";
+      document.getElementById('nextBtn').style.display = "none";
+      loadQuestion();
+      updateScoreboard();
+    }
+
+    function switchMode() {
+      if (quizMode === "all") {
+        if (wrongQuestions.length === 0) {
+          alert("No wrong answers to retry!");
+          return;
+        }
+        backupAllState = {
+          currentIndex: currentIndex,
+          correctCount: correctCount
+        };
+        quizMode = "wrong";
+        quizQuestions = wrongQuestions.slice();
+        currentIndex = 0;
+        correctCount = 0;
+        localStorage.removeItem('fuelCombCurrentIndex');
+        localStorage.removeItem('fuelCombCorrectCount');
+      } else {
+        quizMode = "all";
+        quizQuestions = allQuestions.slice();
+        if (backupAllState !== null) {
+          currentIndex = backupAllState.currentIndex;
+          correctCount = backupAllState.correctCount;
+          backupAllState = null;
+        } else {
+          currentIndex = 0;
+          correctCount = 0;
+        }
+      }
+      document.getElementById('modeBtn').textContent =
+        quizMode === "all" ? "Retry Wrong Answers" : "Back to All Questions";
+      updateScoreboard();
+      loadQuestion();
+    }
+
+    function jumpToQuestion() {
+      const jumpInput = document.getElementById('jumpInput');
+      let questionNumber = parseInt(jumpInput.value);
+      if (
+        isNaN(questionNumber) ||
+        questionNumber < 1 ||
+        questionNumber > quizQuestions.length
+      ) {
+        alert("Please enter a valid question number between 1 and " + quizQuestions.length);
+        return;
+      }
+      currentIndex = questionNumber - 1;
+      saveProgress();
+      loadQuestion();
+      updateScoreboard();
+    }
+
+    function updateJumpInput() {
+      const jumpInput = document.getElementById('jumpInput');
+      if (jumpInput) {
+        jumpInput.max = quizQuestions.length;
+      }
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+    document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+    document.getElementById('modeBtn').addEventListener('click', switchMode);
+    document.getElementById('jumpBtn').addEventListener('click', jumpToQuestion);
+
+    window.onload = function () {
+      updateScoreboard();
+      loadQuestion();
+    };
+  </script>
+</body>
+</html>
